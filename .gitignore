@@ -35,3 +35,7 @@ override.tf.json
 
 # floci
 .floci/
+
+# Terragrunt local state cache
+.terragrunt-state/
+.terragrunt-cache/

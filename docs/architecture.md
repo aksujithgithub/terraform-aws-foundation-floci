@@ -2,17 +2,34 @@
 
 ## Overview
 
-This project provisions a foundational AWS infrastructure using Terraform, designed to run locally via [floci](https://floci.io) (LocalStack-based).
+This project provisions a foundational AWS infrastructure using Terraform modules orchestrated by [Terragrunt](https://terragrunt.gruntwork.io), designed to run locally via [floci](https://floci.io) (LocalStack-based).
 
 ## Structure
 
 ```
+terragrunt.hcl                    # Root: generates provider + versions, configures backend
 environments/
-  local/        # Local dev environment wired to LocalStack via floci
+  local/
+    terragrunt.hcl                # Env-level locals (tags, env name)
+    network/
+      terragrunt.hcl              # Stack: calls modules/network, sets CIDR inputs
+    iam/
+      terragrunt.hcl              # Stack: calls modules/iam, depends on network
 modules/
-  network/      # VPC, subnets, routing
-  iam/          # Roles and instance profiles
+  network/                        # Pure Terraform — VPC, subnets, routing
+  iam/                            # Pure Terraform — roles, instance profiles
 ```
+
+## Terragrunt Hierarchy
+
+```
+Root terragrunt.hcl
+  └── environments/local/terragrunt.hcl   (env locals)
+        ├── network/terragrunt.hcl         (stack)
+        └── iam/terragrunt.hcl             (stack, depends on network)
+```
+
+The root config generates `provider.tf`, `versions.tf`, and `backend.tf` into each stack's working directory at `init` time — no duplication across stacks.
 
 ## Network Layout
 
@@ -22,12 +39,14 @@ VPC (10.0.0.0/16)
 └── Private Subnets (10.0.11.0/24, 10.0.12.0/24) — internal resources
 ```
 
-An Internet Gateway is attached to the VPC with a route table associated to public subnets.
+An Internet Gateway is attached with a route table associated to public subnets.
 
 ## IAM
 
-A base EC2 instance role and instance profile are created per environment for use by compute resources.
+A base EC2 instance role and instance profile are created per environment.
 
 ## Local Development
 
-Traffic is routed to `http://localhost:4566` (LocalStack) via the floci-managed environment. See [decisions.md](./decisions.md) for rationale.
+All traffic routes to `http://localhost:4566` (LocalStack) via the floci-managed environment. The provider block targeting LocalStack is generated automatically by the root `terragrunt.hcl` — no manual provider config needed per stack.
+
+See [decisions.md](./decisions.md) for design rationale.

@@ -1,28 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Validate all Terraform configurations in the repo
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-echo "==> Starting Terraform validation..."
+echo "==> Starting Terragrunt/Terraform validation..."
 
-# Format check
+# 1. Terraform format check (modules are plain .tf files)
 echo ""
-echo "--- Checking formatting ---"
-terraform fmt -check -recursive "$ROOT_DIR" || {
-  echo "ERROR: Formatting issues found. Run 'terraform fmt -recursive .' to fix."
+echo "--- Checking Terraform formatting ---"
+terraform fmt -check -recursive "$ROOT_DIR/modules" || {
+  echo "ERROR: Formatting issues found. Run 'terraform fmt -recursive modules/' to fix."
   exit 1
 }
 echo "Formatting OK"
 
-# Validate each environment
+# 2. Run terragrunt validate across all stacks in every environment
 for env_dir in "$ROOT_DIR"/environments/*/; do
   env_name=$(basename "$env_dir")
   echo ""
   echo "--- Validating environment: $env_name ---"
-  terraform -chdir="$env_dir" init -backend=false -input=false > /dev/null
-  terraform -chdir="$env_dir" validate
-  echo "Environment '$env_name' is valid"
+
+  # run-all validate across all stacks in this environment
+  terragrunt run-all validate \
+    --terragrunt-working-dir "$env_dir" \
+    --terragrunt-non-interactive
+
+  echo "Environment '$env_name' validated"
 done
 
 echo ""
