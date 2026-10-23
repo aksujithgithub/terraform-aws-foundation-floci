@@ -9,7 +9,7 @@ Foundational AWS infrastructure with Terraform modules, orchestrated by [Terragr
 | [floci](https://floci.io) | Local AWS emulator (LocalStack wrapper) | latest |
 | [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) | Interact with LocalStack | v2 |
 | [Terraform](https://developer.hashicorp.com/terraform/install) | Infrastructure provisioning | >= 1.5 |
-| [Terragrunt](https://terragrunt.gruntwork.io/docs/getting-started/install/) | Environment orchestration | >= 0.58 |
+| [Terragrunt](https://terragrunt.gruntwork.io/docs/getting-started/install/) | Environment orchestration | >= 1.0 |
 | [TFLint](https://github.com/terraform-linters/tflint) | Terraform linter | latest |
 | [terraform-docs](https://terraform-docs.io) | Module documentation | latest |
 | [pre-commit](https://pre-commit.com) | Git hook runner | latest |
