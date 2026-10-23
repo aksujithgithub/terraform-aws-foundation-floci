@@ -24,14 +24,14 @@ jobs:
       - name: Setup Terragrunt
         uses: autero1/action-terragrunt@v3
         with:
-          terragrunt-version: "0.58.0"
+          terragrunt-version: "0.67.0"
 
       - name: Terraform Format Check (modules)
         run: terraform fmt -check -recursive modules/
 
       - name: Terragrunt validate (local env — all stacks)
         run: |
-          terragrunt run-all validate \
+          terragrunt run --all validate \
             --terragrunt-working-dir environments/local \
             --terragrunt-non-interactive
 

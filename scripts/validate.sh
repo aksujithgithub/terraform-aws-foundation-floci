@@ -20,8 +20,8 @@ for env_dir in "$ROOT_DIR"/environments/*/; do
   echo ""
   echo "--- Validating environment: $env_name ---"
 
-  # run-all validate across all stacks in this environment
-  terragrunt run-all validate \
+  # run --all validate across all stacks in this environment
+  terragrunt run --all validate \
     --terragrunt-working-dir "$env_dir" \
     --terragrunt-non-interactive
 

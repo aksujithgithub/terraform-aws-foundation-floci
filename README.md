@@ -112,9 +112,9 @@ Expected output:
 
 ```bash
 cd environments/local
-terragrunt run-all init
-terragrunt run-all plan
-terragrunt run-all apply
+terragrunt run --all init
+terragrunt run --all plan
+terragrunt run --all apply
 ```
 
 Terragrunt resolves the dependency order automatically — `network` is applied before `iam`.
@@ -154,7 +154,7 @@ terragrunt destroy
 
 # Everything, in reverse dependency order
 cd environments/local
-terragrunt run-all destroy
+terragrunt run --all destroy
 ```
 
 ### Validate & format
@@ -184,7 +184,7 @@ terraform fmt -recursive modules/
 │   ├── network/                    # VPC, subnets, IGW, route tables
 │   └── iam/                        # Roles, instance profiles
 ├── scripts/
-│   └── validate.sh                 # fmt check + terragrunt run-all validate
+│   └── validate.sh                 # fmt check + terragrunt run --all validate
 ├── docs/
 │   ├── architecture.md
 │   └── decisions.md

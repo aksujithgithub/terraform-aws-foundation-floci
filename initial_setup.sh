@@ -44,9 +44,12 @@ echo "Terragrunt version: $(terragrunt --version)"
 
 # -----------------------------------------------------------------------------
 # 5. TFLint (Terraform linter, used by pre-commit and CI)
+#    Note: removed from homebrew-core due to licensing; lives in the
+#    terraform-linters/tap cask instead.
 # -----------------------------------------------------------------------------
 step "Installing TFLint..."
-brew install tflint
+brew tap terraform-linters/tap
+brew install --cask terraform-linters/tap/tflint
 echo "TFLint version: $(tflint --version)"
 
 # -----------------------------------------------------------------------------
@@ -56,11 +59,8 @@ step "Installing terraform-docs..."
 brew install terraform-docs
 echo "terraform-docs version: $(terraform-docs --version)"
 
-# -----------------------------------------------------------------------------
-# 7. pre-commit
-# -----------------------------------------------------------------------------
-step "Installing pre-commit..."
-brew install pre-commit
+step "Installing pre-commit via pip3..."
+pip3 install --upgrade pre-commit
 echo "pre-commit version: $(pre-commit --version)"
 
 step "Installing pre-commit hooks into the repo..."
@@ -129,6 +129,6 @@ echo "  jq:             $(jq --version)"
 echo ""
 echo "Next steps:"
 echo "  cd environments/local"
-echo "  terragrunt run-all init"
-echo "  terragrunt run-all plan"
-echo "  terragrunt run-all apply"
+echo "  terragrunt run --all init"
+echo "  terragrunt run --all plan"
+echo "  terragrunt run --all apply"
