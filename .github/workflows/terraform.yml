@@ -32,8 +32,8 @@ jobs:
       - name: Terragrunt validate (local env — all stacks)
         run: |
           terragrunt run --all validate \
-            --terragrunt-working-dir environments/local \
-            --terragrunt-non-interactive
+            --working-dir environments/local \
+            --non-interactive
 
   tflint:
     name: TFLint
@@ -46,5 +46,8 @@ jobs:
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
 
-      - name: Run TFLint (modules)
-        run: tflint --recursive modules/
+      - name: Run TFLint (modules/network)
+        run: tflint --chdir=modules/network
+
+      - name: Run TFLint (modules/iam)
+        run: tflint --chdir=modules/iam

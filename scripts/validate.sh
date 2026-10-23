@@ -22,8 +22,8 @@ for env_dir in "$ROOT_DIR"/environments/*/; do
 
   # run --all validate across all stacks in this environment
   terragrunt run --all validate \
-    --terragrunt-working-dir "$env_dir" \
-    --terragrunt-non-interactive
+    --working-dir "$env_dir" \
+    --non-interactive
 
   echo "Environment '$env_name' validated"
 done
