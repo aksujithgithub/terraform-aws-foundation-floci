@@ -48,7 +48,7 @@ jobs:
         uses: terraform-linters/setup-tflint@v4
 
       - name: Run TFLint (modules/network)
-        run: tflint --chdir=modules/network
+        run: tflint --chdir=modules/network --config=../.tflint.hcl
 
       - name: Run TFLint (modules/iam)
-        run: tflint --chdir=modules/iam
+        run: tflint --chdir=modules/iam --config=../.tflint.hcl
