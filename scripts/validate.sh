@@ -22,11 +22,13 @@ for env_dir in "$ROOT_DIR"/environments/*/; do
 
   # run --all validate across all stacks in this environment
   terragrunt run --all validate \
-    --terragrunt-working-dir "$env_dir" \
-    --terragrunt-non-interactive
+    --working-dir "$env_dir" \
+    --non-interactive \
+    --config "$ROOT_DIR/root.hcl"
 
   echo "Environment '$env_name' validated"
 done
 
 echo ""
 echo "==> All validations passed."
+echo "Ready"

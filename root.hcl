@@ -1,22 +1,19 @@
 # -----------------------------------------------------------------------------
-# Root terragrunt.hcl
-# Inherited by all child modules via find_in_parent_folders()
+# root.hcl — Root Terragrunt configuration
+# Inherited by all stacks via: include "root" { path = find_in_parent_folders("root.hcl") }
 # -----------------------------------------------------------------------------
 
 locals {
-  # Parse the environment from the directory path
+  # Derive environment name from directory path
   # e.g. environments/local/network -> "local"
   env = element(split("/", path_relative_to_include()), 1)
 
-  # Common inputs available to every child
-  project = "terraform-aws-foundation"
-
-  # LocalStack endpoint used by the local environment
+  project             = "terraform-aws-foundation"
   localstack_endpoint = "http://localhost:4566"
 }
 
 # ---------------------------------------------------------------------------
-# Generate provider.tf in every child module working directory
+# Generate provider.tf into every stack's working directory
 # ---------------------------------------------------------------------------
 generate "provider" {
   path      = "provider.tf"
@@ -43,7 +40,7 @@ generate "provider" {
 }
 
 # ---------------------------------------------------------------------------
-# Generate versions.tf in every child module working directory
+# Generate versions.tf into every stack's working directory
 # ---------------------------------------------------------------------------
 generate "versions" {
   path      = "versions.tf"
@@ -64,8 +61,7 @@ generate "versions" {
 }
 
 # ---------------------------------------------------------------------------
-# Local state backend (no remote backend for local dev)
-# Swap this block for S3 + DynamoDB when promoting to real environments
+# Local state backend — swap for S3 + DynamoDB in real environments
 # ---------------------------------------------------------------------------
 remote_state {
   backend = "local"
@@ -81,7 +77,7 @@ remote_state {
 }
 
 # ---------------------------------------------------------------------------
-# Inputs available to every child (can be overridden per-env or per-stack)
+# Common inputs passed to every stack
 # ---------------------------------------------------------------------------
 inputs = {
   project     = local.project
