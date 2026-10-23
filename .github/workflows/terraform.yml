@@ -33,7 +33,8 @@ jobs:
         run: |
           terragrunt run --all validate \
             --working-dir environments/local \
-            --non-interactive
+            --non-interactive \
+            --config root.hcl
 
   tflint:
     name: TFLint

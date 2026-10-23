@@ -3,12 +3,11 @@
 # -----------------------------------------------------------------------------
 
 include "root" {
-  path = find_in_parent_folders()
+  path = find_in_parent_folders("root.hcl")
 }
 
-# Pull environment-level locals
 locals {
-  env_vars = read_terragrunt_config(find_in_parent_folders("terragrunt.hcl", "environments/local/terragrunt.hcl"))
+  env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
   tags     = local.env_vars.locals.common_tags
 }
 
@@ -16,11 +15,9 @@ terraform {
   source = "../../../modules/iam"
 }
 
-# Depend on the network stack so IAM is applied after networking
 dependency "network" {
   config_path = "../network"
 
-  # Mock outputs used during `terragrunt validate` / plan without real state
   mock_outputs = {
     vpc_id             = "vpc-00000000000000000"
     public_subnet_ids  = ["subnet-00000000000000001", "subnet-00000000000000002"]

@@ -3,12 +3,11 @@
 # -----------------------------------------------------------------------------
 
 include "root" {
-  path = find_in_parent_folders()
+  path = find_in_parent_folders("root.hcl")
 }
 
-# Pull environment-level locals
 locals {
-  env_vars = read_terragrunt_config(find_in_parent_folders("terragrunt.hcl", "environments/local/terragrunt.hcl"))
+  env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
   tags     = local.env_vars.locals.common_tags
 }
 

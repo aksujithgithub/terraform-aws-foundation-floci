@@ -172,10 +172,10 @@ terraform fmt -recursive modules/
 ## Project Structure
 
 ```
-├── terragrunt.hcl                  # Root: generates provider, versions, backend
+├── root.hcl                        # Root: generates provider, versions, backend
 ├── environments/
 │   └── local/
-│       ├── terragrunt.hcl          # Env-level locals (tags, environment name)
+│       ├── env.hcl                 # Env locals (tags, environment name) — read by stacks
 │       ├── network/
 │       │   └── terragrunt.hcl      # Calls modules/network, sets CIDR inputs
 │       └── iam/
