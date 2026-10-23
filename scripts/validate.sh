@@ -30,3 +30,4 @@ done
 
 echo ""
 echo "==> All validations passed."
+echo "Ready"
