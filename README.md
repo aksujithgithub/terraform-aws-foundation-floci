@@ -4,15 +4,47 @@ Foundational AWS infrastructure with Terraform modules, orchestrated by [Terragr
 
 ## Prerequisites
 
-- [Terraform](https://developer.hashicorp.com/terraform/install) >= 1.5
-- [Terragrunt](https://terragrunt.gruntwork.io/docs/getting-started/install/) >= 0.58
-- [floci](https://floci.io)
-- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
-- [pre-commit](https://pre-commit.com) (optional, for git hooks)
+| Tool | Purpose | Min version |
+|---|---|---|
+| [floci](https://floci.io) | Local AWS emulator (LocalStack wrapper) | latest |
+| [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) | Interact with LocalStack | v2 |
+| [Terraform](https://developer.hashicorp.com/terraform/install) | Infrastructure provisioning | >= 1.5 |
+| [Terragrunt](https://terragrunt.gruntwork.io/docs/getting-started/install/) | Environment orchestration | >= 0.58 |
+| [TFLint](https://github.com/terraform-linters/tflint) | Terraform linter | latest |
+| [terraform-docs](https://terraform-docs.io) | Module documentation | latest |
+| [pre-commit](https://pre-commit.com) | Git hook runner | latest |
+| [jq](https://jqlang.github.io/jq/) | JSON output parsing | latest |
+
+Run `initial_setup.sh` to install everything in one shot (see [Setup](#setup) below).
 
 ---
 
 ## Setup
+
+Run the one-time setup script — it installs all tools, configures the AWS `floci` profile, and verifies LocalStack connectivity:
+
+```bash
+bash initial_setup.sh
+```
+
+What it does, in order:
+
+| Step | Action |
+|---|---|
+| 1 | Install floci, start it, inject env vars |
+| 2 | Install AWS CLI v2 |
+| 3 | Install Terraform (via Homebrew hashicorp tap) |
+| 4 | Install Terragrunt |
+| 5 | Install TFLint |
+| 6 | Install terraform-docs |
+| 7 | Install pre-commit and register git hooks |
+| 8 | Install jq |
+| 9 | Configure `~/.aws/config` with the `floci` profile + LocalStack endpoint |
+| 10 | Verify LocalStack with `aws sts get-caller-identity` |
+
+### Manual setup (step by step)
+
+### Manual setup (step by step)
 
 ### 1. Install floci
 
@@ -172,6 +204,8 @@ terraform fmt -recursive modules/
 ---
 
 ## Pre-commit Hooks
+
+Hooks are installed automatically by `initial_setup.sh`. To install manually:
 
 ```bash
 pre-commit install
