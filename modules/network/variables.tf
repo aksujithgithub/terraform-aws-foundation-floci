@@ -13,6 +13,11 @@ variable "vpc_cidr" {
   type        = string
 }
 
+variable "availability_zones" {
+  description = "Availability zones to spread subnets across (must have at least 2 for ALB)"
+  type        = list(string)
+}
+
 variable "public_subnet_cidrs" {
   description = "CIDR blocks for public subnets"
   type        = list(string)
