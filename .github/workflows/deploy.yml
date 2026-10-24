@@ -1,0 +1,205 @@
+name: Deploy
+
+on:
+  # Manual trigger for plan / apply / destroy
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy"
+        required: true
+        default: "local"
+        type: choice
+        options: [local]
+      action:
+        description: "Action to run"
+        required: true
+        default: "plan"
+        type: choice
+        options: [plan, apply, destroy]
+
+# Prevent concurrent deploys to the same environment
+concurrency:
+  group: deploy-${{ github.event.inputs.environment || 'local' }}
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Gate — run CI validate before any deploy action
+  # ---------------------------------------------------------------------------
+  ci:
+    name: CI Gate
+    uses: ./.github/workflows/ci.yml
+
+  # ---------------------------------------------------------------------------
+  # Plan — PRs and manual plan trigger
+  # ---------------------------------------------------------------------------
+  plan:
+    name: Plan
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'plan')
+
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment || 'local' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.9"
+          terraform_wrapper: false
+
+      - name: Setup Terragrunt
+        uses: autero1/action-terragrunt@v3
+        with:
+          terragrunt-version: "1.0.0"
+
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@v0.2.3
+        with:
+          image-tag: latest
+
+      - name: Terragrunt init
+        run: |
+          terragrunt run --all init \
+            --working-dir environments/${{ env.ENVIRONMENT }} \
+            --non-interactive \
+            --config root.hcl
+
+      - name: Terragrunt plan
+        run: |
+          terragrunt run --all plan \
+            --working-dir environments/${{ env.ENVIRONMENT }} \
+            --non-interactive \
+            --config root.hcl
+
+      - name: Upload plan artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ env.ENVIRONMENT }}-${{ github.run_id }}
+          path: "**/.terragrunt-cache/**/tfplan"
+          retention-days: 5
+
+  # ---------------------------------------------------------------------------
+  # Apply — merge to main or manual apply trigger
+  # ---------------------------------------------------------------------------
+  apply:
+    name: Apply
+    needs: ci
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment || 'local' }}
+
+    environment: ${{ github.event.inputs.environment || 'local' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.9"
+          terraform_wrapper: false
+
+      - name: Setup Terragrunt
+        uses: autero1/action-terragrunt@v3
+        with:
+          terragrunt-version: "1.0.0"
+
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@v0.2.3
+        with:
+          image-tag: latest
+
+      - name: Terragrunt init
+        run: |
+          terragrunt run --all init \
+            --working-dir environments/${{ env.ENVIRONMENT }} \
+            --non-interactive \
+            --config root.hcl
+
+      - name: Terragrunt apply
+        run: |
+          terragrunt run --all apply \
+            --working-dir environments/${{ env.ENVIRONMENT }} \
+            --non-interactive \
+            --config root.hcl \
+            -- -auto-approve
+
+      - name: Collect outputs
+        run: |
+          echo "## Deploy Outputs" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          terragrunt output \
+            --working-dir environments/${{ env.ENVIRONMENT }}/alb \
+            --config root.hcl 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Smoke test — health check
+        run: |
+          ALB_DNS=$(terragrunt output -raw alb_dns_name \
+            --working-dir environments/${{ env.ENVIRONMENT }}/alb \
+            --config root.hcl 2>/dev/null)
+          echo "ALB DNS: $ALB_DNS"
+          for i in $(seq 1 10); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$ALB_DNS/health || echo "000")
+            echo "Attempt $i: HTTP $STATUS"
+            [ "$STATUS" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "Health check failed" && exit 1
+
+  # ---------------------------------------------------------------------------
+  # Destroy — manual only
+  # ---------------------------------------------------------------------------
+  destroy:
+    name: Destroy
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
+
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment || 'local' }}
+
+    environment: ${{ github.event.inputs.environment || 'local' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.9"
+          terraform_wrapper: false
+
+      - name: Setup Terragrunt
+        uses: autero1/action-terragrunt@v3
+        with:
+          terragrunt-version: "1.0.0"
+
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@v0.2.3
+        with:
+          image-tag: latest
+
+      - name: Terragrunt init
+        run: |
+          terragrunt run --all init \
+            --working-dir environments/${{ env.ENVIRONMENT }} \
+            --non-interactive \
+            --config root.hcl
+
+      - name: Terragrunt destroy
+        run: |
+          terragrunt run --all destroy \
+            --working-dir environments/${{ env.ENVIRONMENT }} \
+            --non-interactive \
+            --config root.hcl \
+            -- -auto-approve

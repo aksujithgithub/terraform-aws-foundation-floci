@@ -29,11 +29,15 @@ generate "provider" {
       skip_requesting_account_id  = true
 
       endpoints {
-        ec2     = "${local.localstack_endpoint}"
-        s3      = "${local.localstack_endpoint}"
-        iam     = "${local.localstack_endpoint}"
-        sts     = "${local.localstack_endpoint}"
-        route53 = "${local.localstack_endpoint}"
+        ec2                    = "${local.localstack_endpoint}"
+        s3                     = "${local.localstack_endpoint}"
+        iam                    = "${local.localstack_endpoint}"
+        sts                    = "${local.localstack_endpoint}"
+        route53                = "${local.localstack_endpoint}"
+        elasticloadbalancing   = "${local.localstack_endpoint}"
+        elbv2                  = "${local.localstack_endpoint}"
+        rds                    = "${local.localstack_endpoint}"
+        secretsmanager         = "${local.localstack_endpoint}"
       }
     }
   EOF
@@ -53,7 +57,7 @@ generate "versions" {
       required_providers {
         aws = {
           source  = "hashicorp/aws"
-          version = "~> 5.0"
+          version = "~> 6.0"
         }
       }
     }

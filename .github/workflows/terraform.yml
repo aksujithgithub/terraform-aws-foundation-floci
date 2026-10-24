@@ -1,54 +1,6 @@
-name: Terragrunt CI
-
-on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-
-jobs:
-  validate:
-    name: Validate
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "~1.5"
-          terraform_wrapper: false
-
-      - name: Setup Terragrunt
-        uses: autero1/action-terragrunt@v3
-        with:
-          terragrunt-version: "1.0.0"
-
-      - name: Terraform Format Check (modules)
-        run: terraform fmt -check -recursive modules/
-
-      - name: Terragrunt validate (local env — all stacks)
-        run: |
-          terragrunt run --all validate \
-            --working-dir environments/local \
-            --non-interactive \
-            --config root.hcl
-
-  tflint:
-    name: TFLint
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v4
-
-      - name: Run TFLint (modules/network)
-        run: tflint --chdir=modules/network --config=../.tflint.hcl
-
-      - name: Run TFLint (modules/iam)
-        run: tflint --chdir=modules/iam --config=../.tflint.hcl
+# This workflow has been split into two separate workflows:
+#   ci.yml     — fmt check, terragrunt validate, tflint (runs on every PR/push)
+#   deploy.yml — plan, apply, destroy (calls ci.yml as a gate before deploying)
+#
+# This file is kept for reference only and is not active.
+# It can be deleted once the team has confirmed the new workflows are stable.

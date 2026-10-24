@@ -117,7 +117,49 @@ terragrunt run --all plan
 terragrunt run --all apply
 ```
 
-Terragrunt resolves the dependency order automatically — `network` is applied before `iam`.
+Terragrunt resolves the dependency order automatically:
+```
+network → security-groups → iam → alb → rds → ec2
+```
+
+### Test the CRUD API
+
+After apply, get the ALB DNS name:
+```bash
+cd environments/local/alb
+terragrunt output alb_dns_name
+```
+
+Then hit the endpoints (replace `<ALB_DNS>` with the output):
+```bash
+# Health check
+curl http://<ALB_DNS>/health
+
+# Create an item
+curl -X POST http://<ALB_DNS>/items \
+  -H "Content-Type: application/json" \
+  -d '{"name": "widget", "description": "a test item"}'
+
+# List all items
+curl http://<ALB_DNS>/items
+
+# Get one item
+curl http://<ALB_DNS>/items/1
+
+# Update an item
+curl -X PUT http://<ALB_DNS>/items/1 \
+  -H "Content-Type: application/json" \
+  -d '{"description": "updated description"}'
+
+# Delete an item
+curl -X DELETE http://<ALB_DNS>/items/1
+```
+
+For LocalStack, the ALB DNS resolves to `localhost` — use:
+```bash
+curl http://localhost:4566/_localstack/health   # verify services
+curl http://localhost/health                    # via ALB (port 80)
+```
 
 ### Deploy a single stack
 
@@ -175,22 +217,33 @@ terraform fmt -recursive modules/
 ├── root.hcl                        # Root: generates provider, versions, backend
 ├── environments/
 │   └── local/
-│       ├── env.hcl                 # Env locals (tags, environment name) — read by stacks
-│       ├── network/
-│       │   └── terragrunt.hcl      # Calls modules/network, sets CIDR inputs
-│       └── iam/
-│           └── terragrunt.hcl      # Calls modules/iam (depends on network)
+│       ├── env.hcl                 # Env locals (tags, environment name)
+│       ├── network/                # VPC, subnets, IGW, route tables
+│       ├── security-groups/        # ALB, EC2, RDS security groups
+│       ├── iam/                    # EC2 role + instance profile
+│       ├── alb/                    # Application Load Balancer + target group
+│       ├── rds/                    # MySQL RDS instance in private subnets
+│       └── ec2/                    # EC2 instances in private subnets
 ├── modules/
 │   ├── network/                    # VPC, subnets, IGW, route tables
-│   └── iam/                        # Roles, instance profiles
+│   ├── security-groups/            # ALB / EC2 / RDS security groups
+│   ├── iam/                        # Roles, instance profiles
+│   ├── alb/                        # ALB, listener, target group
+│   ├── ec2/                        # EC2 instances + ALB attachment
+│   └── rds/                        # RDS MySQL + subnet group
+├── app/
+│   ├── app.py                      # Flask CRUD application
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   └── .env.example
 ├── scripts/
-│   └── validate.sh                 # fmt check + terragrunt run --all validate
+│   └── validate.sh
 ├── docs/
 │   ├── architecture.md
 │   └── decisions.md
 └── .github/
     └── workflows/
-        └── terraform.yml           # CI: fmt check, validate, tflint
+        └── terraform.yml
 ```
 
 ---

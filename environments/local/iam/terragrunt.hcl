@@ -23,9 +23,21 @@ dependency "network" {
     public_subnet_ids  = ["subnet-00000000000000001", "subnet-00000000000000002"]
     private_subnet_ids = ["subnet-00000000000000003", "subnet-00000000000000004"]
   }
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_allowed_terraform_commands = ["validate", "plan", "apply", "destroy"]
+  mock_outputs_merge_strategy_with_state  = "shallow"
+}
+
+dependency "rds" {
+  config_path = "../rds"
+
+  mock_outputs = {
+    secret_arn = "arn:aws:secretsmanager:us-east-1:000000000000:secret:mock/db-mock"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan", "apply", "destroy"]
+  mock_outputs_merge_strategy_with_state  = "shallow"
 }
 
 inputs = {
-  tags = local.tags
+  db_secret_arn = dependency.rds.outputs.secret_arn
+  tags          = local.tags
 }
