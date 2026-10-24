@@ -12,6 +12,12 @@ aws secretsmanager create-secret \
   --secret-string '{"db_host":"localhost","db_port":"3306","db_name":"appdb","db_username":"admin","db_password":"password"}' \
   --profile floci
 
+aws secretsmanager put-secret-value \
+  --secret-id "terraform-aws-foundation/local/db" \
+  --secret-string '{"db_host":"127.0.0.1","db_port":"3306","db_name":"appdb","db_username":"admin","db_password":"password"}' \
+  --profile floci \
+  --region us-east-1 2>&1
+
 # Run the Flask app
 cd app
 cp .env.example .env
