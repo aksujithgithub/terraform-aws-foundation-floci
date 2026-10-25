@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project provisions a foundational AWS infrastructure using Terraform modules orchestrated by [Terragrunt](https://terragrunt.gruntwork.io), designed to run locally via [floci](https://floci.io) (LocalStack-based).
+This project provisions a foundational AWS infrastructure using Terraform modules orchestrated by [Terragrunt](https://terragrunt.gruntwork.io), designed to run locally via [floci](https://floci.io) .
 
 ## Structure
 
@@ -47,6 +47,7 @@ A base EC2 instance role and instance profile are created per environment.
 
 ## Local Development
 
-All traffic routes to `http://localhost:4566` (LocalStack) via the floci-managed environment. The provider block targeting LocalStack is generated automatically by the root `terragrunt.hcl` — no manual provider config needed per stack.
+All traffic routes to `http://localhost:4566`  via the floci-managed environment. The provider block targeting floci is generated automatically by the root `terragrunt.hcl` — no manual provider config needed per stack.
 
 See [decisions.md](./decisions.md) for design rationale.
+![alt text](image.png)
