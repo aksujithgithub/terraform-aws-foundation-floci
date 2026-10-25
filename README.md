@@ -1,13 +1,13 @@
 # terraform-aws-foundation
 
-Foundational AWS infrastructure with Terraform modules, orchestrated by [Terragrunt](https://terragrunt.gruntwork.io) and designed for local development via [floci](https://floci.io) (LocalStack).
+Foundational AWS infrastructure with Terraform modules, orchestrated by [Terragrunt](https://terragrunt.gruntwork.io) and designed for local development via [floci](https://floci.io)
 
 ## Prerequisites
 
 | Tool | Purpose | Min version |
 |---|---|---|
-| [floci](https://floci.io) | Local AWS emulator (LocalStack wrapper) | latest |
-| [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) | Interact with LocalStack | v2 |
+| [floci](https://floci.io) | latest |
+| [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) | v2 |
 | [Terraform](https://developer.hashicorp.com/terraform/install) | Infrastructure provisioning | >= 1.5 |
 | [Terragrunt](https://terragrunt.gruntwork.io/docs/getting-started/install/) | Environment orchestration | >= 1.0 |
 | [TFLint](https://github.com/terraform-linters/tflint) | Terraform linter | latest |
@@ -21,7 +21,7 @@ Run `initial_setup.sh` to install everything in one shot (see [Setup](#setup) be
 
 ## Setup
 
-Run the one-time setup script — it installs all tools, configures the AWS `floci` profile, and verifies LocalStack connectivity:
+Run the one-time setup script — it installs all tools, configures the AWS `floci` profile:
 
 ```bash
 bash initial_setup.sh
@@ -39,8 +39,8 @@ What it does, in order:
 | 6 | Install terraform-docs |
 | 7 | Install pre-commit and register git hooks |
 | 8 | Install jq |
-| 9 | Configure `~/.aws/config` with the `floci` profile + LocalStack endpoint |
-| 10 | Verify LocalStack with `aws sts get-caller-identity` |
+| 9 | Configure `~/.aws/config` with the `floci` profile  |
+| 10 | Verify with `aws sts get-caller-identity` |
 
 ### Manual setup (step by step)
 
@@ -78,7 +78,7 @@ output     = json
 endpoint_url = http://localhost:4566
 ```
 
-> The `endpoint_url` key redirects all AWS CLI calls to LocalStack automatically when using `--profile floci`, so you don't need `--endpoint-url` on every command.
+> The `endpoint_url` key redirects all AWS CLI calls to floci automatically when using `--profile floci`, so you don't need `--endpoint-url` on every command.
 
 ### 4. Start floci and activate its environment
 
@@ -153,12 +153,6 @@ curl -X PUT http://<ALB_DNS>/items/1 \
 
 # Delete an item
 curl -X DELETE http://<ALB_DNS>/items/1
-```
-
-For LocalStack, the ALB DNS resolves to `localhost` — use:
-```bash
-curl http://localhost:4566/_localstack/health   # verify services
-curl http://localhost/health                    # via ALB (port 80)
 ```
 
 ### Deploy a single stack
